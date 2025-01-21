@@ -7,6 +7,9 @@ on:
     branches: [main, 'release-*']
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   validate:
     runs-on: ubuntu-latest
@@ -95,9 +98,6 @@ jobs:
         if: steps.release-info.outputs.type != ''
         run: |
           ./.github/scripts/prepare_javadoc.sh ${{ github.event.repository.name }} ${{ steps.release-info.outputs.version }} ${{ steps.release-info.outputs.type == 'snapshot' }}
-        env:
-          GIT_USERNAME: ${{ secrets.GH_USERNAME }}
-          GIT_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Archive artifacts
         uses: actions/upload-artifact@v4

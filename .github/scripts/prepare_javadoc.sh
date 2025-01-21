@@ -71,3 +71,13 @@ echo "Computed all versions:"
 cat list_versions.md
 cd ..
 echo "Local docs update finished."
+
+echo "Committing and pushing changes..."
+git add -A
+git config user.email "${repository_name}-bot@eclipse.org"
+git config user.name "Eclipse Keyple Bot"
+git commit --allow-empty -m "docs: update documentation for version $version"
+git push origin doc
+
+cd ..
+echo "Documentation update completed."
