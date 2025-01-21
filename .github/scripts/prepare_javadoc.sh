@@ -1,7 +1,5 @@
 #!/bin/sh
 
-echo "Compute the current API version..."
-
 repository_name=$1
 version=$2
 is_snapshot=$3
@@ -10,38 +8,36 @@ if [ "$is_snapshot" = true ]
 then
   version="$version-SNAPSHOT"
 fi
-
 echo "Computed current API version: $version"
-
-echo "Clone $repository_name..."
+echo "Cloning repository: $repository_name..."
 git clone https://github.com/eclipse-keyple/$repository_name.git
-
 cd $repository_name
 
-echo "Checkout doc branch..."
+echo "Switching to 'doc' branch..."
 git checkout -f doc
 
-echo "Delete existing SNAPSHOT directory..."
+echo "Cleaning up existing SNAPSHOT directories..."
 rm -rf *-SNAPSHOT
 
-echo "Create target directory $version..."
-mkdir $version
+echo "Creating directory for version $version..."
+mkdir -p $version
 
-echo "Copy javadoc and uml files..."
+echo "Copying Javadoc files to $version..."
 cp -rf ../build/docs/javadoc/* $version/
+
+echo "Copying UML diagrams to $version..."
 cp -rf ../src/main/uml/api_*.svg $version/
 
-# Find the latest stable version (first non-SNAPSHOT)
 latest_stable=$(ls -d [0-9]*/ | grep -v SNAPSHOT | cut -f1 -d'/' | sort -Vr | head -n1)
 
-# Create latest-stable copy if we have a stable version
-if [ ! -z "$latest_stable" ]; then
-    echo "Creating latest-stable directory pointing to $latest_stable..."
-    rm -rf latest-stable
-    mkdir latest-stable
-    cp -rf "$latest_stable"/* latest-stable/
+echo "Latest stable version detected: $latest_stable"
 
-    echo "Creating robots.txt..."
+if [ ! -z "$latest_stable" ]; then
+    echo "Updating latest stable version directory..."
+    rm -rf latest-stable
+    mkdir -p latest-stable
+    cp -rf "$latest_stable"/* latest-stable/
+    echo "Creating robots.txt file..."
     cat > robots.txt << EOF
 User-agent: *
 Allow: /
@@ -50,14 +46,12 @@ Disallow: /*/[0-9]*/
 EOF
 fi
 
-echo "Update versions list..."
+echo "Updating version list..."
+sorted_dirs=$(ls -d [0-9]*/ | cut -f1 -d'/' | sort -Vr)
+
 echo "| Version | Documents |" > list_versions.md
 echo "|:---:|---|" >> list_versions.md
 
-# Get the list of directories sorted by version number
-sorted_dirs=$(ls -d [0-9]*/ | cut -f1 -d'/' | sort -Vr)
-
-# Loop through each sorted directory
 for directory in $sorted_dirs
 do
   diagrams=""
@@ -66,7 +60,6 @@ do
     name=`echo "$diagram" | tr _ " " | cut -f1 -d'.' | sed -r 's/^api/API/g'`
     diagrams="$diagrams<br>[$name]($directory/$diagram)"
   done
-  # If this is the stable version, write latest-stable entry first
   if [ "$directory" = "$latest_stable" ]; then
       echo "| **$directory (latest stable)** | [API documentation](latest-stable)$diagrams |" >> list_versions.md
   else

@@ -5,6 +5,7 @@ plugins {
     java
     id("com.diffplug.spotless") version "6.25.0"
     id("org.sonarqube") version "3.1"
+    id("com.vanniktech.maven.publish") version "0.30.0"
     jacoco
 }
 buildscript {
@@ -31,6 +32,42 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
     testImplementation("org.assertj:assertj-core:3.25.3")
+}
+
+mavenPublishing {
+    publishToMavenCentral(com.vanniktech.maven.publish.SonatypeHost.DEFAULT)
+    signAllPublications()
+
+    coordinates(
+        groupId = project.group.toString(),
+        artifactId = project.name,
+        version = project.version.toString()
+    )
+
+    pom {
+        name.set(project.property("title").toString())
+        description.set(project.property("description").toString())
+        url.set("https://github.com/eclipse-keyple/${project.name}")
+        licenses {
+            license {
+                name.set("Eclipse Public License - v 2.0")
+                url.set("https://www.eclipse.org/legal/epl-2.0/")
+                distribution.set("repo")
+            }
+        }
+        developers {
+            developer {
+                id.set("keyple")
+                name.set("Keyple Contributors")
+                email.set("keyple-dev@eclipse.org")
+            }
+        }
+        scm {
+            connection.set("scm:git:git://github.com/eclipse-keyple/${project.name}.git")
+            developerConnection.set("scm:git:ssh://github.com:eclipse-keyple/${project.name}.git")
+            url.set("https://github.com/eclipse-keyple/${project.name}/tree/main")
+        }
+    }
 }
 
 val javaSourceLevel: String by project
@@ -65,9 +102,9 @@ tasks {
     jacocoTestReport {
         dependsOn("test")
         reports {
-            xml.isEnabled = true
-            csv.isEnabled = false
-            html.isEnabled = true
+            xml.required.set(true)
+            csv.required.set(false)
+            html.required.set(true)
         }
     }
     sonarqube {

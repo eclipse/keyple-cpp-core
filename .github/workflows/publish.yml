@@ -1,0 +1,106 @@
+name: Publish to Maven Central
+
+on:
+  push:
+    branches: [main, 'release-*']
+  pull_request:
+    branches: [main, 'release-*']
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Extract version
+        id: version
+        run: |
+          VERSION=$(grep version gradle.properties | cut -d= -f2 | tr -d "[:space:]")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Check version
+        run: ./.github/scripts/check_version.sh ${{ steps.version.outputs.version }}
+
+      - name: Build and Test
+        if: "!contains(github.event.head_commit.message, 'Release ')"
+        run: ./gradlew clean build test --no-build-cache
+
+      - name: Run SonarQube
+        if: github.event_name != 'pull_request'
+        run: ./gradlew sonarqube
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  publish:
+    needs: validate
+    if: |
+      github.event_name == 'push' &&
+      (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/release-'))
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Extract version and check release type
+        id: release-info
+        run: |
+          VERSION=$(grep version gradle.properties | cut -d= -f2 | tr -d "[:space:]")
+          if [[ "${{ github.event.head_commit.message }}" == "Release $VERSION" ]]; then
+            echo "type=release" >> $GITHUB_OUTPUT
+          else
+            echo "type=snapshot" >> $GITHUB_OUTPUT
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Import GPG key
+        uses: crazy-max/ghaction-import-gpg@v6
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.GPG_PASSPHRASE }}
+
+      - name: Publish Release
+        if: steps.release-info.outputs.type == 'release'
+        run: ./gradlew clean build test publishAllPublicationsToMavenCentral --no-parallel
+        env:
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.OSSRH_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.OSSRH_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.GPG_PRIVATE_KEY }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.GPG_PASSPHRASE }}
+
+      - name: Publish Snapshot
+        if: steps.release-info.outputs.type == 'snapshot'
+        run: ./gradlew clean build test publishAllPublicationsToMavenCentral --no-parallel
+        env:
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.OSSRH_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.OSSRH_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.GPG_PRIVATE_KEY }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.GPG_PASSPHRASE }}
+
+      - name: Update JavaDoc
+        if: steps.release-info.outputs.type != ''
+        run: |
+          ./.github/scripts/prepare_javadoc.sh ${{ github.event.repository.name }} ${{ steps.release-info.outputs.version }} ${{ steps.release-info.outputs.type == 'snapshot' }}
+        env:
+          GIT_USERNAME: ${{ secrets.GH_USERNAME }}
+          GIT_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Archive artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: |
+            build*/libs/**
+            build*/reports/tests/**
+            build*/reports/jacoco/test/html/**
