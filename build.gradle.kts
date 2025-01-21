@@ -112,7 +112,7 @@ tasks {
             property("sonar.projectKey", "eclipse_" + project.name)
             property("sonar.organization", "eclipse")
             property("sonar.host.url", "https://sonarcloud.io")
-            property("sonar.login", System.getenv("SONAR_LOGIN"))
+            property("sonar.login", System.getenv("SONAR_TOKEN"))
             System.getenv("BRANCH_NAME")?.let {
                 if (!"main".equals(it)) {
                     property("sonar.branch.name", it)
