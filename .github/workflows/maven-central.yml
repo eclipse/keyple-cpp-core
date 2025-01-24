@@ -80,7 +80,7 @@ jobs:
       - name: Extract version and check release type
         id: release-info
         run: |
-          VERSION=$(awk -F'=' '/^version=/ {print $2}' gradle.properties | tr -d "[:space:]")
+          VERSION=$(awk -F'=' '/^version[[:space:]]*=/ {gsub(/[[:space:]]*/, "", $2); print $2}' gradle.properties)
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           
           echo "${{ github.event.head_commit.message }}" | grep -qE "^Release ${VERSION}$" && echo "type=release" >> $GITHUB_OUTPUT || echo "type=snapshot" >> $GITHUB_OUTPUT
