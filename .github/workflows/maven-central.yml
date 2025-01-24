@@ -109,7 +109,9 @@ jobs:
       - name: Update JavaDoc
         if: steps.release-info.outputs.type != ''
         run: |
-          ./.github/scripts/prepare_javadoc.sh ${{ github.event.repository.name }} ${{ steps.release-info.outputs.version }} ${{ steps.release-info.outputs.type == 'snapshot' }}
+          ./.github/scripts/prepare_javadoc.sh ${{ github.event.repository.name }} ${{ steps.version.outputs.version }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Archive artifacts
         uses: actions/upload-artifact@v4

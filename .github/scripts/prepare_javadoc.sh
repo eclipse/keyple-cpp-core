@@ -2,12 +2,7 @@
 
 repository_name=$1
 version=$2
-is_snapshot=$3
 
-if [ "$is_snapshot" = true ]
-then
- version="$version-SNAPSHOT"
-fi
 echo "Computed current API version: $version"
 echo "Cloning repository: $repository_name..."
 git clone https://github.com/eclipse-keyple/$repository_name.git
@@ -75,7 +70,8 @@ git add -A
 git config user.email "${repository_name}-bot@eclipse.org"
 git config user.name "Eclipse Keyple Bot"
 git commit --allow-empty -m "docs: update documentation for version $version"
-git push origin doc
+git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/eclipse-keyple/${repository_name}.git"
+git push origin HEAD:doc
 
 rm -rf ../$repository_name
 echo "Documentation update completed."
