@@ -109,7 +109,7 @@ jobs:
       - name: Update JavaDoc
         if: steps.release-info.outputs.type != ''
         run: |
-          ./.github/scripts/prepare_javadoc.sh ${{ github.event.repository.name }} ${{ steps.version.outputs.version }}
+          ./.github/scripts/prepare_javadoc.sh ${{ github.event.repository.name }} ${{ steps.release-info.outputs.version }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
