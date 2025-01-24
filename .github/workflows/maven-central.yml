@@ -31,6 +31,10 @@ jobs:
           VERSION=$(grep version gradle.properties | cut -d= -f2 | tr -d "[:space:]")
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
+      - name: Debug Credentials
+        run: |
+          echo "Sonatype Username: ${{ secrets.ORG_GRADLE_PROJECT_mavenCentralUsername }}"
+
       - name: Check version
         run: ./.github/scripts/check_version.sh ${{ steps.version.outputs.version }}
 
@@ -82,7 +86,7 @@ jobs:
 
       - name: Publish Snapshot
         if: steps.release-info.outputs.type == 'snapshot'
-        run: ./gradlew clean build test publishAllPublicationsToMavenCentral --no-parallel
+        run: ./gradlew clean build test publishAllPublicationsToMavenCentral --no-parallel --info --stacktrace
         env:
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.OSSRH_USERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.OSSRH_PASSWORD }}
