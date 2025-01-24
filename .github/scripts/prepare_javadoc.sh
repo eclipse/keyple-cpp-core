@@ -6,7 +6,7 @@ is_snapshot=$3
 
 if [ "$is_snapshot" = true ]
 then
-  version="$version-SNAPSHOT"
+ version="$version-SNAPSHOT"
 fi
 echo "Computed current API version: $version"
 echo "Cloning repository: $repository_name..."
@@ -33,12 +33,12 @@ latest_stable=$(ls -d [0-9]*/ | grep -v SNAPSHOT | cut -f1 -d'/' | sort -Vr | he
 echo "Latest stable version detected: $latest_stable"
 
 if [ ! -z "$latest_stable" ]; then
-    echo "Updating latest stable version directory..."
-    rm -rf latest-stable
-    mkdir -p latest-stable
-    cp -rf "$latest_stable"/* latest-stable/
-    echo "Creating robots.txt file..."
-    cat > robots.txt << EOF
+   echo "Updating latest stable version directory..."
+   rm -rf latest-stable
+   mkdir -p latest-stable
+   cp -rf "$latest_stable"/* latest-stable/
+   echo "Creating robots.txt file..."
+   cat > robots.txt << EOF
 User-agent: *
 Allow: /
 Allow: /latest-stable/
@@ -54,23 +54,21 @@ echo "|:---:|---|" >> list_versions.md
 
 for directory in $sorted_dirs
 do
-  diagrams=""
-  for diagram in `ls $directory/api_*.svg | cut -f2 -d'/'`
-  do
-    name=`echo "$diagram" | tr _ " " | cut -f1 -d'.' | sed -r 's/^api/API/g'`
-    diagrams="$diagrams<br>[$name]($directory/$diagram)"
-  done
-  if [ "$directory" = "$latest_stable" ]; then
-      echo "| **$directory (latest stable)** | [API documentation](latest-stable)$diagrams |" >> list_versions.md
-  else
-      echo "| $directory | [API documentation]($directory)$diagrams |" >> list_versions.md
-  fi
+ diagrams=""
+ for diagram in `ls $directory/api_*.svg | cut -f2 -d'/'`
+ do
+   name=`echo "$diagram" | tr _ " " | cut -f1 -d'.' | sed -r 's/^api/API/g'`
+   diagrams="$diagrams<br>[$name]($directory/$diagram)"
+ done
+ if [ "$directory" = "$latest_stable" ]; then
+     echo "| **$directory (latest stable)** | [API documentation](latest-stable)$diagrams |" >> list_versions.md
+ else
+     echo "| $directory | [API documentation]($directory)$diagrams |" >> list_versions.md
+ fi
 done
 
 echo "Computed all versions:"
 cat list_versions.md
-cd ..
-echo "Local docs update finished."
 
 echo "Committing and pushing changes..."
 git add -A
@@ -79,5 +77,5 @@ git config user.name "Eclipse Keyple Bot"
 git commit --allow-empty -m "docs: update documentation for version $version"
 git push origin doc
 
-cd ..
+rm -rf ../$repository_name
 echo "Documentation update completed."
