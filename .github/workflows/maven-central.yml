@@ -34,7 +34,7 @@ jobs:
       - name: Validate Sonatype Credentials
         run: |
           RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" \
-            -u "${{ secrets.ORG_GRADLE_PROJECT_mavenCentralUsername }}:${{ secrets.ORG_GRADLE_PROJECT_mavenCentralPassword }}" \
+            -u "${{ secrets.OSSRH_USERNAME }}:${{ secrets.OSSRH_PASSWORD }}" \
             "https://oss.sonatype.org/service/local/staging/profile_repositories")
           
           if [[ "$RESPONSE" -ne 200 ]]; then
