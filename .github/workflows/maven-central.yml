@@ -34,6 +34,12 @@ jobs:
       - name: Check version
         run: ./.github/scripts/check_version.sh ${{ steps.version.outputs.version }}
 
+      - name: Ensure GPG Agent is Running
+        run: |
+          gpgconf --kill gpg-agent
+          gpgconf --launch gpg-agent
+          gpgconf --check-programs
+
       - name: Build and Test
         if: "!contains(github.event.head_commit.message, 'Release ')"
         run: ./gradlew clean build test --no-build-cache
@@ -73,8 +79,12 @@ jobs:
       - name: Import GPG key
         uses: crazy-max/ghaction-import-gpg@v6
         with:
+          git_user_signingkey: ${{ secrets.GPG_SUBKEY_ID }}
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
+
+      - name: Check Imported GPG Key
+        run: gpg --list-secret-keys --keyid-format LONG
 
       - name: Publish Release
         if: steps.release-info.outputs.type == 'release'
