@@ -38,11 +38,11 @@ jobs:
         if: "!contains(github.event.head_commit.message, 'Release ')"
         run: ./gradlew clean build test --no-build-cache
 
-      - name: Run SonarQube
-        if: github.event_name != 'pull_request'
-        run: ./gradlew sonar
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+#      - name: Run SonarQube
+#        if: github.event_name != 'pull_request'
+#        run: ./gradlew sonar
+#        env:
+#          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   publish:
     needs: validate
