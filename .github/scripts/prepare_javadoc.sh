@@ -17,12 +17,10 @@ echo "🔄 Cloning repository: $repository_name..."
 git clone --depth=1 https://github.com/eclipse-keyple/$repository_name.git
 cd $repository_name
 
-# Check if 'doc' branch exists before switching
-if git show-ref --verify --quiet refs/heads/doc; then
-  git checkout -f doc
-else
-  echo "⚠️ The 'doc' branch does not exist. Creating it..."
-  git checkout -b doc
+# Attempt to switch to the 'doc' branch
+if ! git checkout -f doc; then
+  echo "❌ Error: The 'doc' branch does not exist. Please create it manually before running this script."
+  exit 1
 fi
 
 # Cleanup previous SNAPSHOT versions
