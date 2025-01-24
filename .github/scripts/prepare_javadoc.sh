@@ -14,7 +14,7 @@ echo "🔍 Detected API version: $version"
 echo "🔄 Cloning repository: $repository_name..."
 
 # Optimized repository cloning
-git clone --depth=1 https://github.com/eclipse-keyple/$repository_name.git
+git clone https://github.com/eclipse-keyple/$repository_name.git
 cd $repository_name
 
 # Attempt to switch to the 'doc' branch
