@@ -72,6 +72,9 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
+      - name: Ensure scripts are executable
+        run: chmod +x ./.github/scripts/*.sh
+
       - name: Extract version and check release type
         id: release-info
         run: |
