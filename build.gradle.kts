@@ -4,7 +4,7 @@
 plugins {
     java
     id("com.diffplug.spotless") version "6.25.0"
-    id("org.sonarqube") version "3.1"
+    id("org.sonarqube") version "6.0.1.5171"
     id("com.vanniktech.maven.publish") version "0.30.0"
     jacoco
 }
@@ -13,11 +13,7 @@ buildscript {
         mavenLocal()
         mavenCentral()
     }
-    dependencies {
-        classpath("org.eclipse.keyple:keyple-gradle:0.2.+") { isChanging = true }
-    }
 }
-apply(plugin = "org.eclipse.keyple")
 
 ///////////////////////////////////////////////////////////////////////////////
 //  APP CONFIGURATION
