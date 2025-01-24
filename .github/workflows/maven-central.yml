@@ -34,12 +34,6 @@ jobs:
       - name: Check version
         run: ./.github/scripts/check_version.sh ${{ steps.version.outputs.version }}
 
-      - name: Ensure GPG Agent is Running
-        run: |
-          gpgconf --kill gpg-agent
-          gpgconf --launch gpg-agent
-          gpgconf --check-programs
-
       - name: Build and Test
         if: "!contains(github.event.head_commit.message, 'Release ')"
         run: ./gradlew clean build test --no-build-cache
