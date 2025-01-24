@@ -40,7 +40,7 @@ jobs:
 
       - name: Run SonarQube
         if: github.event_name != 'pull_request'
-        run: ./gradlew sonarqube
+        run: ./gradlew sonar
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
