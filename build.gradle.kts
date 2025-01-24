@@ -32,11 +32,6 @@ dependencies {
     testImplementation("org.assertj:assertj-core:3.25.3")
 }
 
-java {
-    withJavadocJar()
-    withSourcesJar()
-}
-
 mavenPublishing {
     publishToMavenCentral(com.vanniktech.maven.publish.SonatypeHost.DEFAULT)
     signAllPublications()
