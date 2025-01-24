@@ -18,7 +18,7 @@ git clone --depth=1 https://github.com/eclipse-keyple/$repository_name.git
 cd $repository_name
 
 # Attempt to switch to the 'doc' branch
-if ! git checkout -f doc; then
+if ! git checkout doc; then
   echo "❌ Error: The 'doc' branch does not exist. Please create it manually before running this script."
   exit 1
 fi
