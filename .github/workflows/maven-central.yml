@@ -31,9 +31,18 @@ jobs:
           VERSION=$(grep version gradle.properties | cut -d= -f2 | tr -d "[:space:]")
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
-      - name: Debug Credentials
+      - name: Validate Sonatype Credentials
         run: |
-          echo "Sonatype Username: ${{ secrets.ORG_GRADLE_PROJECT_mavenCentralUsername }}"
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" \
+            -u "${{ secrets.ORG_GRADLE_PROJECT_mavenCentralUsername }}:${{ secrets.ORG_GRADLE_PROJECT_mavenCentralPassword }}" \
+            "https://oss.sonatype.org/service/local/staging/profile_repositories")
+          
+          if [[ "$RESPONSE" -ne 200 ]]; then
+            echo "❌ Authentication to Sonatype OSSRH failed (HTTP $RESPONSE)"
+            exit 1
+          else
+            echo "✅ Authentication to Sonatype OSSRH succeeded"
+          fi
 
       - name: Check version
         run: ./.github/scripts/check_version.sh ${{ steps.version.outputs.version }}
