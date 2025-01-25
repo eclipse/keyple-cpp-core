@@ -82,7 +82,7 @@ jobs:
         run: |
           cat > build.gradle.kts << EOF
           tasks.withType<Javadoc> {
-              options {
+              (options as StandardJavadocDocletOptions).apply {
                   windowTitle = "${{ github.event.repository.name }} - ${{ steps.release-info.outputs.version }}"
                   header = """<div style="margin-top: 7px">
                       <a target="_parent" href="https://keyple.org/">
@@ -92,7 +92,7 @@ jobs:
                       ${{ github.event.repository.name }} - ${{ steps.release-info.outputs.version }}
                   </div>"""
                   docTitle = "${{ github.event.repository.name }} - ${{ steps.release-info.outputs.version }}"
-                  use = true
+                  setUse(true)
                   bottom = "Copyright © Eclipse Foundation, Inc. All Rights Reserved."
                   overview = "src/main/javadoc/overview.html"
               }
