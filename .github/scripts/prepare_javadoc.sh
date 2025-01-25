@@ -13,7 +13,7 @@ version=$2
 echo "🔍 Detected API version: $version"
 echo "🔄 Cloning repository: $repository_name..."
 
-# Optimized repository cloning
+# Repository cloning
 git clone https://github.com/eclipse-keyple/$repository_name.git
 cd $repository_name
 

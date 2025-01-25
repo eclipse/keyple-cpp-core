@@ -52,12 +52,6 @@ jobs:
         if: "!contains(github.event.head_commit.message, 'Release ')"
         run: ./gradlew build test --no-daemon
 
-  #      - name: Run SonarQube
-  #        if: github.event_name != 'pull_request'
-  #        run: ./gradlew sonar
-  #        env:
-  #          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
   publish:
     needs: validate
     if: |
@@ -73,9 +67,49 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      - name: Ensure scripts are executable
+      - name: Prepare META-INF and Manifest
         run: |
-          if [ -d "./.github/scripts" ]; then chmod +x ./.github/scripts/*.sh; fi
+          mkdir -p build/resources/main/META-INF
+          cp LICENSE build/resources/main/META-INF/
+          cp NOTICE.md build/resources/main/META-INF/
+          
+          cat > build/resources/main/META-INF/MANIFEST.MF << EOF
+          Implementation-Title: ${{ github.event.repository.name }}
+          Implementation-Version: ${{ steps.release-info.outputs.version }}
+          EOF
+
+      - name: Configure JavaDoc options
+        run: |
+          cat > build.gradle.kts << EOF
+          tasks.withType<Javadoc> {
+              options {
+                  windowTitle = "${{ github.event.repository.name }} - ${{ steps.release-info.outputs.version }}"
+                  header = """<div style="margin-top: 7px">
+                      <a target="_parent" href="https://keyple.org/">
+                          <img src="https://keyple.org/docs/api-reference/java-api/keyple-java-core/1.0.0/images/keyple.png" 
+                              height="20px" style="background-color: white; padding: 3px; margin: 0 10px -7px 3px;"/>
+                      </a>
+                      ${{ github.event.repository.name }} - ${{ steps.release-info.outputs.version }}
+                  </div>"""
+                  docTitle = "${{ github.event.repository.name }} - ${{ steps.release-info.outputs.version }}"
+                  use = true
+                  bottom = "Copyright © Eclipse Foundation, Inc. All Rights Reserved."
+                  overview = "src/main/javadoc/overview.html"
+              }
+          }
+          EOF
+
+      - name: Setup POM configuration
+        run: |
+          cat > PUBLISHERS.yml << EOF
+          name: "${{ github.event.repository.name }}"
+          description: "$(cat gradle.properties | grep description | cut -d'=' -f2)"
+          url: "https://github.com/eclipse-keyple/${{ github.event.repository.name }}"
+          scm:
+            connection: "scm:git:git://github.com/eclipse-keyple/${{ github.event.repository.name }}.git"
+            developerConnection: "scm:git:https://github.com/eclipse-keyple/${{ github.event.repository.name }}.git"
+            url: "https://github.com/eclipse-keyple/${{ github.event.repository.name }}"
+          EOF
 
       - name: Extract version and check release type
         id: release-info
@@ -108,7 +142,7 @@ jobs:
       - name: Update JavaDoc
         if: steps.release-info.outputs.type != ''
         run: |
-          ./.github/scripts/prepare_javadoc.sh ${{ github.event.repository.name }} ${{ steps.release-info.outputs.version }}
+          ./.github/scripts/prepare_javadoc.sh ${{ github.event.repository.name }} ${{ steps.release-info.outputs.version }} ${{ steps.release-info.outputs.type == 'snapshot' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
