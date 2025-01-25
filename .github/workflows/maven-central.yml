@@ -67,6 +67,10 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
+      - name: Ensure scripts are executable
+        run: |
+          if [ -d "./.github/scripts" ]; then chmod +x ./.github/scripts/*.sh; fi
+
       - name: Prepare META-INF and Manifest
         run: |
           mkdir -p build/resources/main/META-INF
