@@ -82,9 +82,9 @@ jobs:
           Implementation-Version: ${{ steps.release-info.outputs.version }}
           EOF
 
-      - name: Configure JavaDoc options
+      - name: Configure JavaDoc
         run: |
-          awk '/mavenPublishing/{ print "tasks {\n    withType<Javadoc> {\n        (options as StandardJavadocDocletOptions).apply {\n            windowTitle = project.property(\"title\").toString() + \" - \" + project.version\n            header = \"\"\"<div style=\"margin-top: 7px\">\n                <a target=\"_parent\" href=\"https://keyple.org/\">\n                    <img src=\"https://keyple.org/docs/api-reference/java-api/keyple-java-core/1.0.0/images/keyple.png\" \n                        height=\"20px\" style=\"background-color: white; padding: 3px; margin: 0 10px -7px 3px;\"/>\n                </a>\n                ${project.property(\"title\")} - ${project.version}\n            </div>\"\"\"\n            docTitle = \"${project.property(\"title\")} - ${project.version}\"\n            setUse(true)\n            bottom = \"Copyright © Eclipse Foundation, Inc. All Rights Reserved.\"\n            overview = \"src/main/javadoc/overview.html\"\n        }\n    }\n}\n\n"; }1' build.gradle.kts > tmp && mv tmp build.gradle.kts
+          cat .github/gradle/javadoc.gradle.kts >> build.gradle.kts
 
       - name: Setup POM configuration
         run: |
