@@ -13,7 +13,7 @@ tasks {
             </div>"""
             docTitle = title
             setUse(true)
-            bottom = System.getenv("Copyright © Eclipse Foundation, Inc. All Rights Reserved.")
+            bottom = "Copyright © Eclipse Foundation, Inc. All Rights Reserved."
             overview = "src/main/javadoc/overview.html"
         }
     }
